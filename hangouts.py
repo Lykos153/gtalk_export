@@ -8,94 +8,6 @@ import time
 # He also runs a webservice for parsing Google Hangouts JSON files at:
 # http://hangoutparser.jay2k1.com/
 
-def replaceSmileys(string):
-    # replaces UTF-8 graphical emoticons by their ASCII equivalents
-    # list of emoji codes taken from https://aprescott.com/posts/hangouts-emoji
-    patterns = [
-        u'\U0001F41D',         # -<@% ?       honeybee
-        u'\U0001F435',         # :(|) ?       monkey face
-        u'\U0001F437',         # :(:) ?       pig face
-        u'\U0001F473',         # (]:{ ?       man with turban
-        u'\U0001F494',         # <\3 </3      ?       broken heart
-        u'\U0001F49C',         # <3   ?       purple heart
-        u'\U0001F4A9',         # ~@~  ?       pile of poo
-        u'\U0001F600',         # :D :-D       ?       grinning face
-        u'\U0001F601',         # ^_^  ?       grinning face with smiling eyes
-        u'\U0001F602',         # XD
-        u'\U0001F603',         # :) :-) =)    ?       smiling face with open mouth
-        u'\U0001F604',         # =D   ?       smiling face with open mouth and smiling eyes
-        u'\U0001F605',         # ^_^;;        ?       smiling face with open mouth and cold sweat
-        u'\U0001F607',         # O:) O:-) O=) ?       smiling face with halo
-        u'\U0001F608',         # }:) }:-) }=) ?       smiling face with horns
-        u'\U0001F609',         # ;) ;-)       ?       winking face
-        u'\U0001F60E',         # B) B-)       ?       smiling face with sunglasses
-        u'\U0001F610',         # :-| :| =|    ?       neutral face
-        u'\U0001F611',         # -_-  ?       expressionless face
-        u'\U0001F613',         # o_o; ?       face with cold sweat
-        u'\U0001F614',         # u_u  ?       pensive face
-        u'\U0001F615',         # :\ :/ :-\ :-/ =\ =/  ?       confused face
-        u'\U0001F616',         # :S :-S :s :-s        ?       confounded face
-        u'\U0001F617',         # :* :-*       ?       kissing face
-        u'\U0001F618',         # ;* ;-*       ?       face throwing a kiss
-        u'\U0001F61B',         # :P :-P =P :p :-p =p  ?       face with stuck-out tongue
-        u'\U0001F61C',         # ;P ;-P ;p ;-p        ?       face with stuck-out tongue and winking eye
-        u'\U0001F61E',         # :( :-( =(    ?       disappointed face
-        u'\U0001F621',         # >.< >:( >:-( >=(     ?       pouting face
-        u'\U0001F622',         # T_T :'( ;_; ='(      ?       crying face
-        u'\U0001F623',         # >_<  ?       persevering face
-        u'\U0001F626',         # D:   ?       frowning face with open mouth
-        u'\U0001F62E',         # o.o :o :-o =o        ?       face with open mouth
-        u'\U0001F632',         # O.O :O :-O =O        ?       astonished face
-        u'\U0001F634',         # O.O :O :-O =O        ?       astonished face
-        u'\U0001F635',         # x_x X-O X-o X( X-(   ?       dizzy face
-        u'\U0001F638',         # :X) :3 (=^..^=) (=^.^=) =^_^=        ?       grinning cat face with smiling eyes
-        u'\U0001F64C'          # Dunno, but it needs to be replaced for ASCII
-    ]
-    replacements = [
-        '-<@%',
-        ':(|)',
-        ':(:)',
-        '(]:{',
-        '</3',
-        '<3',
-        '~@~',
-        ':D',
-        '^_^',
-        'XD',
-        ':)',
-        '=D',
-        '^_^;;',
-        'O:)',
-        '}:)',
-        ';)',
-        'B-)',
-        ':|',
-        '-_-',
-        'o_o;',
-        'u_u',
-        ':/',
-        ':S',
-        ':*',
-        ';*',
-        ':P',
-        ';P',
-        ':(',
-        '>.<',
-        ":'(",
-        '>_<',
-        'D:',
-        ':o',
-        ':O',
-        '-_-Zzz',
-        'x_x',
-        ':3',
-        '_'
-    ]
-
-    for index in range(len(patterns)):
-        string = re.sub(patterns[index], replacements[index], string)
-    return string
-
 def hangoutsToArray(json_input, timestamp_format):
     # set the desired timestamp format here
     # the default is '%Y-%m-%d %H:%M:%S' which is YYYY-MM-DD HH:mm:ss.
@@ -180,10 +92,9 @@ def hangoutsToArray(json_input, timestamp_format):
                             imgurl = att['embed_item']['embeds.PlusPhoto.plus_photo']['url']
                             msg += imgurl
                             msghtml += '<a href="%s" target="_blank"><img src="%s" alt="attached image" style="max-width:%s"></a>' % (imgurl, imgurl, "100%")
-                # replace unicode emoticon characters by smileys
-                messages[k]['message'] = replaceSmileys(msg)
+                messages[k]['message'] = msg
                 if msg != msghtml:
-                    messages[k]['message_html'] = replaceSmileys(msghtml)
+                    messages[k]['message_html'] = msghtml
             elif messages[k]['event_type'] == 'ADD_USER':
                 newuserid = in_event[k]['membership_change']['participant_id'][0]['chat_id']
                 newusername = retval[i]['members'][newuserid] if newuserid in retval[i]['members'].keys() else 'unknown_%s' % newuserid
@@ -200,8 +111,6 @@ def hangoutsToArray(json_input, timestamp_format):
                         if not 'text' in in_event[k]['chat_message']['message_content']['segment'][l].keys():
                             continue
                         messages[k]['message'] += in_event[k]['chat_message']['message_content']['segment'][l]['text']
-                # replace unicode emoticon characters by smileys
-                messages[k]['message'] = replaceSmileys(messages[k]['message'])
             elif messages[k]['event_type'] == 'OTR_MODIFICATION':
                 messages[k]['message'] = 'unknown OTR_MODIFICATION'
             elif messages[k]['event_type'] == 'VOICEMAIL':
@@ -212,8 +121,6 @@ def hangoutsToArray(json_input, timestamp_format):
                         if not 'text' in in_event[k]['chat_message']['message_content']['segment'][l].keys():
                             continue
                         messages[k]['message'] += in_event[k]['chat_message']['message_content']['segment'][l]['text']
-                # replace unicode emoticon characters by smileys
-                messages[k]['message'] = replaceSmileys(messages[k]['message'])
         # sort messages by timestamp because for some reason they're cluttered
         messages.sort(cmp=lambda a,b: int(a['timestamp']) - int(b['timestamp']))
         # add the messages array to the conversation array
