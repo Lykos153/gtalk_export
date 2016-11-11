@@ -122,7 +122,7 @@ def hangoutsToArray(json_input, timestamp_format):
                             continue
                         messages[k]['message'] += in_event[k]['chat_message']['message_content']['segment'][l]['text']
         # sort messages by timestamp because for some reason they're cluttered
-        messages.sort(cmp=lambda a,b: int(a['timestamp']) - int(b['timestamp']))
+        messages.sort(key=lambda message: message['timestamp'])
         # add the messages array to the conversation array
         retval[i]['messages'] = messages
     return retval
