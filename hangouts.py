@@ -30,6 +30,7 @@ def hangoutsToArray(json_input, timestamp_format):
         in_conv = rawconvos[i]['conversation_state']['conversation']
         in_event = rawconvos[i]['conversation_state']['event']
         pdata = in_conv['participant_data']
+        retval[i]['id'] = in_conv['id']['id']
         retval[i]['type'] = in_conv['type']
         retval[i]['msgcount'] = len(in_event)
         retval[i]['name'] = in_conv['name'] if 'name' in in_conv.keys() else ""
@@ -51,6 +52,7 @@ def hangoutsToArray(json_input, timestamp_format):
             messages[k]['sender_id'] = in_event[k]['sender_id']['chat_id']
             messages[k]['sender'] = retval[i]['members'][messages[k]['sender_id']] if messages[k]['sender_id'] in retval[i]['members'].keys() else "unknown_%s" % id
             messages[k]['event_type'] = in_event[k]['event_type']
+            messages[k]['event_id'] = in_event[k]['event_id']
 
             if messages[k]['event_type'] == 'RENAME_CONVERSATION':
                 newname = in_event[k]['conversation_rename']['new_name']
